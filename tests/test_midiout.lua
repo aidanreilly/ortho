@@ -13,7 +13,7 @@ local function fake_schedule(seconds, fn)
 end
 
 local note_out = NoteOut.new(fake_device, 3, fake_schedule)
-note_out:fire(60, 100, 0.25)
+NoteOut.fire(note_out, 60, 100, 0.25)
 
 t.assert_eq(#calls, 1, "note_on fires immediately")
 t.assert_eq(calls[1][1], "on", "first call is note_on")
