@@ -69,7 +69,7 @@ local function handle_action(action)
   if not action then return end
 
   if action.type == "clear_grid" then
-    pathgrid:clear()
+    PathGrid.clear(pathgrid)
     removed_orientation = {}
   elseif action.type == "reset_traveler" then
     local traveler = travelers[traveler_key(action.x, action.y)]
@@ -79,20 +79,20 @@ local function handle_action(action)
     end
   elseif action.type == "toggle_path" then
     local id = path_id_for(action.x1, action.y1, action.x2, action.y2)
-    if pathgrid:has(id) then
+    if PathGrid.has(pathgrid, id) then
       removed_orientation[id] = pathgrid.paths[id].orientation
-      pathgrid:remove(id)
+      PathGrid.remove(pathgrid, id)
     else
-      pathgrid:add(id, action.x1, action.y1, action.x2, action.y2, "vertical_first")
+      PathGrid.add(pathgrid, id, action.x1, action.y1, action.x2, action.y2, "vertical_first")
     end
   elseif action.type == "toggle_elbow" then
     local id = path_id_for(action.x1, action.y1, action.x2, action.y2)
     local path = pathgrid.paths[id]
     if path then
-      pathgrid:remove(id)
-      pathgrid:add(id, action.x1, action.y1, action.x2, action.y2, flip_orientation(path.orientation))
+      PathGrid.remove(pathgrid, id)
+      PathGrid.add(pathgrid, id, action.x1, action.y1, action.x2, action.y2, flip_orientation(path.orientation))
     elseif removed_orientation[id] then
-      pathgrid:add(id, action.x1, action.y1, action.x2, action.y2, flip_orientation(removed_orientation[id]))
+      PathGrid.add(pathgrid, id, action.x1, action.y1, action.x2, action.y2, flip_orientation(removed_orientation[id]))
       removed_orientation[id] = nil
     end
   end
@@ -104,7 +104,7 @@ local function fire_note(x, y, path_orientation)
   local note = Scale.note_for_cell(x, y, params:get("root_note"), params:get("scale_type"), params:get("octave_span"))
   local velocity = Expression.velocity_for_row(y, params:get("velocity_ceiling"), params:get("velocity_floor"))
   local gate = Expression.gate_for_orientation(path_orientation, params:get("gate_staccato"), params:get("gate_legato"))
-  note_out:fire(note, velocity, gate)
+  NoteOut.fire(note_out, note, velocity, gate, params:get("midi_channel"))
 end
 
 local function clock_loop()
@@ -112,7 +112,7 @@ local function clock_loop()
     local beats = params_setup.division_beats(params:get("clock_division"))
     clock.sync(beats)
     for _, traveler in pairs(travelers) do
-      local result = traveler:step(pathgrid, math.random)
+      local result = Traveler.step(traveler, pathgrid, math.random)
       if result.note then
         fire_note(result.x, result.y, result.orientation)
       end
@@ -123,22 +123,28 @@ end
 
 function init()
   math.randomseed(os.time())
-  params_setup.add_all(params)
 
-  g = grid.connect()
-  g.key = function(x, y, z)
-    local action = gesture:key(x, y, z, util.time())
-    handle_action(action)
-    redraw_grid()
-  end
-
-  local midi_device = midi.connect(params:get("midi_device"))
-  note_out = NoteOut.new(midi_device, params:get("midi_channel"), function(seconds, fn)
+  -- note_out must exist before params_setup.add_all runs: the midi_device
+  -- option's action callback fires immediately on registration (norns
+  -- applies a param's default on add) and needs somewhere real to write
+  -- the connected device.
+  note_out = NoteOut.new(nil, function(seconds, fn)
     clock.run(function()
       clock.sleep(seconds)
       fn()
     end)
   end)
+
+  params_setup.add_all(params, midi.vports, function(vport_index)
+    note_out.device = midi.connect(vport_index)
+  end)
+
+  g = grid.connect()
+  g.key = function(x, y, z)
+    local action = Gesture.key(gesture, x, y, z, util.time())
+    handle_action(action)
+    redraw_grid()
+  end
 
   clock_id = clock.run(clock_loop)
   redraw_grid()
