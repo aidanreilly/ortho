@@ -1,4 +1,8 @@
 package.path = package.path .. ";./?.lua"
+-- include() is a norns global (path-relative module loader); stub it as a
+-- require() wrapper so lib modules that call include() to load each other
+-- are loadable under plain lua for testing.
+include = function(path) return require((path:gsub("/", "."))) end
 local PathGrid = require("lib.pathgrid")
 local Traveler = require("lib.traveler")
 local render = require("lib.render")

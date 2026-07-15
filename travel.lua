@@ -113,7 +113,7 @@ local function clock_loop()
     local beats = params_setup.division_beats(params:get("clock_division"))
     clock.sync(beats)
     for _, traveler in pairs(travelers) do
-      local result = traveler:step(pathgrid, math.random)
+      local result = Traveler.step(traveler, pathgrid, math.random)
       if result.note then
         fire_note(result.x, result.y, result.orientation)
       end
