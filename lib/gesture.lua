@@ -68,6 +68,12 @@ end
 
 function Gesture:release_destination(x, y, now)
   local ox, oy = self.held.x, self.held.y
+  self.pending_dest = nil
+  -- the reserved clear-all cell is never a path endpoint, on either side
+  if is_clear_button(ox, oy) or is_clear_button(x, y) then
+    return nil
+  end
+
   local action
   if self.last_tap and self.last_tap.x == x and self.last_tap.y == y
       and (now - self.last_tap.time) <= self.double_tap_window then
@@ -78,7 +84,6 @@ function Gesture:release_destination(x, y, now)
     self.last_tap = { x = x, y = y, time = now }
   end
   self.did_action_while_held = true
-  self.pending_dest = nil
   return action
 end
 

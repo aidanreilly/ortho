@@ -64,4 +64,19 @@ t.assert_eq(d1, nil, "releasing origin mid-tap fires nothing")
 local d2 = g7:key(5, 2, 0, 0.2) -- destination's own later release is a no-op
 t.assert_eq(d2, nil, "orphaned destination release is a no-op")
 
+-- the reserved (1,1) cell is never a path endpoint, held as origin or tapped as destination
+local g8 = Gesture.new(0.3)
+g8:key(1, 1, 1, 0.0)
+g8:key(5, 2, 1, 0.1)
+local e1 = g8:key(5, 2, 0, 0.12) -- destination release with (1,1) held as origin
+t.assert_eq(e1, nil, "holding the reserved cell as origin fires no path action")
+g8:key(1, 1, 0, 0.2)
+
+local g9 = Gesture.new(0.3)
+g9:key(2, 2, 1, 0.0)
+g9:key(1, 1, 1, 0.1)
+local e2 = g9:key(1, 1, 0, 0.12) -- tapping the reserved cell as destination
+t.assert_eq(e2, nil, "tapping the reserved cell as destination fires no path action")
+g9:key(2, 2, 0, 0.2)
+
 t.report()

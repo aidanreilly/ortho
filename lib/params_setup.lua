@@ -20,6 +20,9 @@ end
 
 local SCALE_NAMES = scale_names()
 
+-- norns exposes up to 16 MIDI device slots (see midi.vports)
+local MIDI_DEVICES = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16" }
+
 -- params:get on an option param returns the selected index, not its label;
 -- this maps that index back to the scale name Scale.note_for_cell expects.
 function params_setup.scale_name(index)
@@ -38,7 +41,7 @@ function params_setup.add_all(p)
   p:add_number("velocity_floor", "velocity floor", 1, 127, 20)
   p:add_control("gate_staccato", "gate (staccato)", controlspec.new(0.02, 1, "lin", 0, 0.08, "s"))
   p:add_control("gate_legato", "gate (legato)", controlspec.new(0.02, 4, "lin", 0, 0.4, "s"))
-  p:add_option("midi_device", "midi device", { "1", "2", "3", "4" }, 1)
+  p:add_option("midi_device", "midi device", MIDI_DEVICES, 1)
 end
 
 return params_setup

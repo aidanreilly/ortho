@@ -56,6 +56,15 @@ local function path_id_for(x1, y1, x2, y2)
   return string.format("%d,%d->%d,%d", x1, y1, x2, y2)
 end
 
+local function flip_orientation(orientation)
+  return (orientation == "vertical_first") and "horizontal_first" or "vertical_first"
+end
+
+-- a double-tap on an existing path arrives as two actions: tap 1's
+-- toggle_path removes the path, then tap 2's toggle_elbow needs to restore
+-- it flipped rather than leave it deleted. Stashed here between the two.
+local removed_orientation = {}
+
 local function handle_action(action)
   if not action then return end
 
@@ -70,6 +79,7 @@ local function handle_action(action)
   elseif action.type == "toggle_path" then
     local id = path_id_for(action.x1, action.y1, action.x2, action.y2)
     if pathgrid:has(id) then
+      removed_orientation[id] = pathgrid.paths[id].orientation
       pathgrid:remove(id)
     else
       pathgrid:add(id, action.x1, action.y1, action.x2, action.y2, "vertical_first")
@@ -78,9 +88,11 @@ local function handle_action(action)
     local id = path_id_for(action.x1, action.y1, action.x2, action.y2)
     local path = pathgrid.paths[id]
     if path then
-      local flipped = (path.orientation == "vertical_first") and "horizontal_first" or "vertical_first"
       pathgrid:remove(id)
-      pathgrid:add(id, action.x1, action.y1, action.x2, action.y2, flipped)
+      pathgrid:add(id, action.x1, action.y1, action.x2, action.y2, flip_orientation(path.orientation))
+    elseif removed_orientation[id] then
+      pathgrid:add(id, action.x1, action.y1, action.x2, action.y2, flip_orientation(removed_orientation[id]))
+      removed_orientation[id] = nil
     end
   end
 
@@ -110,6 +122,7 @@ local function clock_loop()
 end
 
 function init()
+  math.randomseed(os.time())
   params_setup.add_all(params)
 
   g = grid.connect()
