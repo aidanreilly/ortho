@@ -128,7 +128,7 @@ function init()
 
   g = grid.connect()
   g.key = function(x, y, z)
-    local action = gesture:key(x, y, z, util.time())
+    local action = Gesture.key(gesture, x, y, z, util.time())
     handle_action(action)
     redraw_grid()
   end
