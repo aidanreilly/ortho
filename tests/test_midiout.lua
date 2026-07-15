@@ -12,8 +12,8 @@ local function fake_schedule(seconds, fn)
   scheduled = { seconds = seconds, fn = fn }
 end
 
-local note_out = NoteOut.new(fake_device, 3, fake_schedule)
-note_out:fire(60, 100, 0.25)
+local note_out = NoteOut.new(fake_device, fake_schedule)
+NoteOut.fire(note_out, 60, 100, 0.25, 3)
 
 t.assert_eq(#calls, 1, "note_on fires immediately")
 t.assert_eq(calls[1][1], "on", "first call is note_on")
@@ -27,5 +27,10 @@ t.assert_eq(#calls, 2, "note_off fires once the schedule elapses")
 t.assert_eq(calls[2][1], "off", "second call is note_off")
 t.assert_eq(calls[2][2], 60, "note_off note number matches")
 t.assert_eq(calls[2][3], 3, "note_off channel matches")
+
+-- channel is no longer stored on note_out, so a channel change between two
+-- fires is picked up immediately on the next call
+NoteOut.fire(note_out, 62, 90, 0.1, 7)
+t.assert_eq(calls[3][4], 7, "note_on uses the channel passed to this call, not a stored value")
 
 t.report()
