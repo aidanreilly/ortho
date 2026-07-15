@@ -38,7 +38,12 @@ local function sync_travelers()
 end
 
 local function redraw_grid()
-  local levels = render.compute_led_grid(pathgrid, travelers, gesture.held)
+  -- render.compute_led_grid expects an array; travelers is keyed by "x,y"
+  local traveler_list = {}
+  for _, traveler in pairs(travelers) do
+    traveler_list[#traveler_list + 1] = traveler
+  end
+  local levels = render.compute_led_grid(pathgrid, traveler_list, gesture.held)
   for y = 1, 8 do
     for x = 1, 16 do
       g:led(x, y, (levels[y] and levels[y][x]) or render.BRIGHTNESS.off)
