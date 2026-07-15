@@ -70,6 +70,7 @@ local function handle_action(action)
 
   if action.type == "clear_grid" then
     pathgrid:clear()
+    removed_orientation = {}
   elseif action.type == "reset_traveler" then
     local traveler = travelers[traveler_key(action.x, action.y)]
     if traveler then
