@@ -36,4 +36,12 @@ for _, name in ipairs(scale_options) do
 end
 t.assert_true(has_major, "scale_type options include major")
 
+-- params:get on an option returns an index, not a label; scale_name must
+-- map it back to the same name that index refers to in the options list
+local major_index = nil
+for i, name in ipairs(scale_options) do
+  if name == "major" then major_index = i end
+end
+t.assert_eq(params_setup.scale_name(major_index), "major", "scale_name maps an option index back to its label")
+
 t.report()

@@ -18,11 +18,19 @@ local function scale_names()
   return names
 end
 
+local SCALE_NAMES = scale_names()
+
+-- params:get on an option param returns the selected index, not its label;
+-- this maps that index back to the scale name Scale.note_for_cell expects.
+function params_setup.scale_name(index)
+  return SCALE_NAMES[index]
+end
+
 -- registers every travel param (spec section 7) onto `p`, which is norns'
 -- real `params` global at runtime or a fake recorder in tests.
 function params_setup.add_all(p)
   p:add_option("clock_division", "clock division", DIVISIONS, 3) -- default 1/16
-  p:add_option("scale_type", "scale", scale_names(), 1)
+  p:add_option("scale_type", "scale", SCALE_NAMES, 1)
   p:add_number("root_note", "root note", 0, 127, 48)
   p:add_number("octave_span", "octave span", 1, 8, 4)
   p:add_number("midi_channel", "midi channel", 1, 16, 1)
