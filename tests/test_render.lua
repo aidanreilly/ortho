@@ -9,7 +9,7 @@ local render = require("lib.render")
 local t = require("tests.testutil")
 
 local pg = PathGrid.new()
-pg:add("p", 1, 1, 4, 1, "vertical_first") -- straight line, root at (1,1), end at (4,1)
+PathGrid.add(pg, "p", 1, 1, 4, 1, "vertical_first") -- straight line, root at (1,1), end at (4,1)
 
 local traveler = Traveler.new(1, 1)
 traveler.x, traveler.y = 3, 1 -- pretend it's mid-path

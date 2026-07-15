@@ -69,7 +69,7 @@ local function handle_action(action)
   if not action then return end
 
   if action.type == "clear_grid" then
-    pathgrid:clear()
+    PathGrid.clear(pathgrid)
     removed_orientation = {}
   elseif action.type == "reset_traveler" then
     local traveler = travelers[traveler_key(action.x, action.y)]
@@ -79,20 +79,20 @@ local function handle_action(action)
     end
   elseif action.type == "toggle_path" then
     local id = path_id_for(action.x1, action.y1, action.x2, action.y2)
-    if pathgrid:has(id) then
+    if PathGrid.has(pathgrid, id) then
       removed_orientation[id] = pathgrid.paths[id].orientation
-      pathgrid:remove(id)
+      PathGrid.remove(pathgrid, id)
     else
-      pathgrid:add(id, action.x1, action.y1, action.x2, action.y2, "vertical_first")
+      PathGrid.add(pathgrid, id, action.x1, action.y1, action.x2, action.y2, "vertical_first")
     end
   elseif action.type == "toggle_elbow" then
     local id = path_id_for(action.x1, action.y1, action.x2, action.y2)
     local path = pathgrid.paths[id]
     if path then
-      pathgrid:remove(id)
-      pathgrid:add(id, action.x1, action.y1, action.x2, action.y2, flip_orientation(path.orientation))
+      PathGrid.remove(pathgrid, id)
+      PathGrid.add(pathgrid, id, action.x1, action.y1, action.x2, action.y2, flip_orientation(path.orientation))
     elseif removed_orientation[id] then
-      pathgrid:add(id, action.x1, action.y1, action.x2, action.y2, flip_orientation(removed_orientation[id]))
+      PathGrid.add(pathgrid, id, action.x1, action.y1, action.x2, action.y2, flip_orientation(removed_orientation[id]))
       removed_orientation[id] = nil
     end
   end
