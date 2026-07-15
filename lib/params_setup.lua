@@ -11,10 +11,9 @@ end
 
 local function scale_names()
   local names = {}
-  for name in pairs(Scale.SCALES) do
-    names[#names + 1] = name
+  for i, scale in ipairs(Scale.SCALES) do
+    names[i] = string.lower(scale.name)
   end
-  table.sort(names)
   return names
 end
 

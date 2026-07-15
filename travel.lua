@@ -101,8 +101,7 @@ local function handle_action(action)
 end
 
 local function fire_note(x, y, path_orientation)
-  local scale_name = params_setup.scale_name(params:get("scale_type"))
-  local note = Scale.note_for_cell(x, y, params:get("root_note"), scale_name, params:get("octave_span"))
+  local note = Scale.note_for_cell(x, y, params:get("root_note"), params:get("scale_type"), params:get("octave_span"))
   local velocity = Expression.velocity_for_row(y, params:get("velocity_ceiling"), params:get("velocity_floor"))
   local gate = Expression.gate_for_orientation(path_orientation, params:get("gate_staccato"), params:get("gate_legato"))
   note_out:fire(note, velocity, gate)
