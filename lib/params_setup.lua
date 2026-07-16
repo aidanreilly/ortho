@@ -31,12 +31,13 @@ local function midi_device_names(midi_vports)
   return names
 end
 
--- registers every travel param onto `p` (norns' real `params` global at
+-- registers every ortho param onto `p` (norns' real `params` global at
 -- runtime, or a fake recorder in tests). midi_vports is norns' real
 -- midi.vports global at runtime, or a fake array of {name=} tables in
 -- tests. on_midi_device_change(vport_index) is invoked whenever the
--- midi_device param changes, including once immediately on registration
--- (norns option params fire their action once to apply the default).
+-- midi_device param changes; norns does NOT fire it on registration by
+-- itself, so the caller must apply defaults with params:bang() (see
+-- ortho.lua's init()).
 function params_setup.add_all(p, midi_vports, on_midi_device_change)
   p:add_option("clock_division", "clock division", DIVISIONS, 3) -- default 1/16
   p:add_option("scale_type", "scale", SCALE_NAMES, 1)

@@ -7,9 +7,12 @@ local params_setup = require("lib.params_setup")
 local t = require("tests.testutil")
 
 -- fake params recorder: mimics just enough of norns' params API to observe
--- which ids get registered, without needing the real norns runtime. The
--- generic add() form fires action(default) immediately, matching norns'
--- real behavior of applying a param's default value on registration.
+-- which ids get registered, without needing the real norns runtime. NOTE:
+-- unlike real norns (which only fires action via params:set()/bang(), never
+-- on add() itself), this fake's generic add() form fires action(default)
+-- immediately for test convenience. This divergence is exactly what let a
+-- real bug slip through once (see git history) and is slated to be closed
+-- by vendoring norns' real paramset.lua as the test double.
 local fake = { registered = {} }
 function fake:add_option(id, name, options, default) self.registered[id] = { kind = "option", options = options } end
 function fake:add_number(id, name, min, max, default) self.registered[id] = { kind = "number", min = min, max = max } end

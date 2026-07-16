@@ -1,4 +1,4 @@
--- travel: a grid-based generative MIDI sequencer.
+-- ortho: a grid-based generative MIDI sequencer.
 -- See docs/superpowers/specs/2026-07-14-travel-design.md for the full design.
 
 local Scale = include("lib/scale")
@@ -164,6 +164,6 @@ end
 function redraw()
   screen.clear()
   screen.move(10, 32)
-  screen.text("travel")
+  screen.text("ortho")
   screen.update()
 end
