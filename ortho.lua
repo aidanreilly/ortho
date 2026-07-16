@@ -1,5 +1,4 @@
--- ortho: a grid-based generative MIDI sequencer.
--- See docs/superpowers/specs/2026-07-14-travel-design.md for the full design.
+--- ortho: a grid-based generative MIDI sequencer.
 
 local Scale = include("lib/scale")
 local PathGrid = include("lib/pathgrid")
