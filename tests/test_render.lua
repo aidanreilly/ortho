@@ -1,11 +1,15 @@
 package.path = package.path .. ";./?.lua"
+-- include() is a norns global (path-relative module loader); stub it as a
+-- require() wrapper so lib modules that call include() to load each other
+-- are loadable under plain lua for testing.
+include = function(path) return require((path:gsub("/", "."))) end
 local PathGrid = require("lib.pathgrid")
 local Traveler = require("lib.traveler")
 local render = require("lib.render")
 local t = require("tests.testutil")
 
 local pg = PathGrid.new()
-pg:add("p", 1, 1, 4, 1, "vertical_first") -- straight line, root at (1,1), end at (4,1)
+PathGrid.add(pg, "p", 1, 1, 4, 1, "vertical_first") -- straight line, root at (1,1), end at (4,1)
 
 local traveler = Traveler.new(1, 1)
 traveler.x, traveler.y = 3, 1 -- pretend it's mid-path

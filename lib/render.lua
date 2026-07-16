@@ -1,3 +1,5 @@
+local PathGrid = include("lib/pathgrid")
+
 local render = {}
 
 render.BRIGHTNESS = { dim = 4, mid = 8, full = 15, off = 0 }
@@ -7,9 +9,9 @@ render.BRIGHTNESS = { dim = 4, mid = 8, full = 15, off = 0 }
 function render.compute_led_grid(pathgrid, travelers, held)
   local levels = {}
 
-  for _, cell in ipairs(pathgrid:all_cells()) do
+  for _, cell in ipairs(PathGrid.all_cells(pathgrid)) do
     levels[cell.y] = levels[cell.y] or {}
-    levels[cell.y][cell.x] = pathgrid:is_root(cell.x, cell.y) and render.BRIGHTNESS.mid or render.BRIGHTNESS.dim
+    levels[cell.y][cell.x] = PathGrid.is_root(pathgrid, cell.x, cell.y) and render.BRIGHTNESS.mid or render.BRIGHTNESS.dim
   end
 
   for _, traveler in ipairs(travelers) do

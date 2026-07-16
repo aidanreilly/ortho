@@ -1,8 +1,7 @@
 local PathGrid = {}
-PathGrid.__index = PathGrid
 
 function PathGrid.new()
-  return setmetatable({ paths = {}, cells = {} }, PathGrid)
+  return { paths = {}, cells = {} }
 end
 
 local function cell_key(x, y)
@@ -56,7 +55,7 @@ local function compute_route(x1, y1, x2, y2, orientation)
   return cells
 end
 
-function PathGrid:add(path_id, x1, y1, x2, y2, orientation)
+function PathGrid.add(pathgrid, path_id, x1, y1, x2, y2, orientation)
   -- straight lines always run along one axis; normalize their stored
   -- orientation to match it (ignoring whatever the caller passed), so a
   -- naive caller default doesn't mislabel gate length, and so double-tap
@@ -67,20 +66,20 @@ function PathGrid:add(path_id, x1, y1, x2, y2, orientation)
     orientation = "horizontal_first"
   end
   local route = compute_route(x1, y1, x2, y2, orientation)
-  self.paths[path_id] = { route = route, x1 = x1, y1 = y1, x2 = x2, y2 = y2, orientation = orientation }
+  pathgrid.paths[path_id] = { route = route, x1 = x1, y1 = y1, x2 = x2, y2 = y2, orientation = orientation }
   for index, cell in ipairs(route) do
     local key = cell_key(cell.x, cell.y)
-    self.cells[key] = self.cells[key] or {}
-    table.insert(self.cells[key], { path_id = path_id, index = index })
+    pathgrid.cells[key] = pathgrid.cells[key] or {}
+    table.insert(pathgrid.cells[key], { path_id = path_id, index = index })
   end
 end
 
-function PathGrid:remove(path_id)
-  local path = self.paths[path_id]
+function PathGrid.remove(pathgrid, path_id)
+  local path = pathgrid.paths[path_id]
   if not path then return end
   for _, cell in ipairs(path.route) do
     local key = cell_key(cell.x, cell.y)
-    local occupants = self.cells[key]
+    local occupants = pathgrid.cells[key]
     if occupants then
       for i = #occupants, 1, -1 do
         if occupants[i].path_id == path_id then
@@ -88,33 +87,33 @@ function PathGrid:remove(path_id)
         end
       end
       if #occupants == 0 then
-        self.cells[key] = nil
+        pathgrid.cells[key] = nil
       end
     end
   end
-  self.paths[path_id] = nil
+  pathgrid.paths[path_id] = nil
 end
 
-function PathGrid:has(path_id)
-  return self.paths[path_id] ~= nil
+function PathGrid.has(pathgrid, path_id)
+  return pathgrid.paths[path_id] ~= nil
 end
 
-function PathGrid:occurrences_at(x, y)
-  return self.cells[cell_key(x, y)] or {}
+function PathGrid.occurrences_at(pathgrid, x, y)
+  return pathgrid.cells[cell_key(x, y)] or {}
 end
 
-function PathGrid:is_decision_cell(x, y)
-  return #self:occurrences_at(x, y) > 1
+function PathGrid.is_decision_cell(pathgrid, x, y)
+  return #PathGrid.occurrences_at(pathgrid, x, y) > 1
 end
 
-function PathGrid:path_route(path_id)
-  local path = self.paths[path_id]
+function PathGrid.path_route(pathgrid, path_id)
+  local path = pathgrid.paths[path_id]
   return path and path.route or nil
 end
 
-function PathGrid:paths_starting_at(x, y)
+function PathGrid.paths_starting_at(pathgrid, x, y)
   local ids = {}
-  for path_id, path in pairs(self.paths) do
+  for path_id, path in pairs(pathgrid.paths) do
     if path.x1 == x and path.y1 == y then
       ids[#ids + 1] = path_id
     end
@@ -122,22 +121,22 @@ function PathGrid:paths_starting_at(x, y)
   return ids
 end
 
-function PathGrid:is_root(x, y)
-  return #self:paths_starting_at(x, y) > 0
+function PathGrid.is_root(pathgrid, x, y)
+  return #PathGrid.paths_starting_at(pathgrid, x, y) > 0
 end
 
-function PathGrid:all_cells()
+function PathGrid.all_cells(pathgrid)
   local list = {}
-  for key in pairs(self.cells) do
+  for key in pairs(pathgrid.cells) do
     local xs, ys = key:match("^(%-?%d+),(%-?%d+)$")
     list[#list + 1] = { x = tonumber(xs), y = tonumber(ys) }
   end
   return list
 end
 
-function PathGrid:clear()
-  self.paths = {}
-  self.cells = {}
+function PathGrid.clear(pathgrid)
+  pathgrid.paths = {}
+  pathgrid.cells = {}
 end
 
 return PathGrid
