@@ -125,9 +125,8 @@ function init()
   math.randomseed(os.time())
 
   -- note_out must exist before params_setup.add_all runs: the midi_device
-  -- option's action callback fires immediately on registration (norns
-  -- applies a param's default on add) and needs somewhere real to write
-  -- the connected device.
+  -- option's action callback needs somewhere real to write the connected
+  -- device once it fires (see params:bang() below).
   note_out = NoteOut.new(nil, function(seconds, fn)
     clock.run(function()
       clock.sleep(seconds)
@@ -138,6 +137,14 @@ function init()
   params_setup.add_all(params, midi.vports, function(vport_index)
     note_out.device = midi.connect(vport_index)
   end)
+
+  -- norns does NOT fire an option param's action on ParamSet:add/add_option;
+  -- it only fires later via params:set(...) or params:bang(). Without this,
+  -- on_midi_device_change never runs, note_out.device stays nil, and the
+  -- first note in clock_loop crashes. params:bang() applies every
+  -- registered param's default through its action callback, connecting the
+  -- default midi_device before the clock loop can fire.
+  params:bang()
 
   g = grid.connect()
   g.key = function(x, y, z)
